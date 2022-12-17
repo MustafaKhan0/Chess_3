@@ -1,5 +1,6 @@
 import pygame as pg
 import os 
+import numpy as np
 
 if not pg.font:
     print("Warning, fonts disabled")
@@ -9,6 +10,43 @@ if not pg.mixer:
 
 main_dir = os.path.split(os.path.abspath(__file__))[0]
 data_dir = os.path.join(main_dir, "data")
+
+xspaces = {
+    0 : 37.5,
+    1 : 112.5,
+    2 : 187.5, 
+    3 : 262.5,
+    4 : 337.5,
+    5 : 412.5,
+    6 : 497.5,
+    7 : 562.5
+}
+
+yspaces = {
+    0 : 37.5,
+    1 : 112.5,
+    2 : 187.5, 
+    3 : 262.5,
+    4 : 337.5,
+    5 : 412.5,
+    6 : 497.5,
+    7 : 562.5
+}
+
+# Digit 1 : Which instance of that piece it is
+# Digit 2 : 1 = Pawn, 2 = Rook, 3 = Knight, 4 = Bishop, 5 = King, 6 = Queen
+# Digit 3 : 1 = White, 2 = Black
+boards = np.array([
+    [120, 130, 140, 150, 160, 141, 131, 121],
+    [110, 111, 112, 113, 114, 115, 116, 117]
+])
+boards = np.append(boards, np.zeros((4, 8)), 0)
+boards = np.append(boards, np.array([[210, 211, 212, 213, 214, 215, 216, 217],[220, 230, 240, 250, 260, 241, 231, 221]]), 0)
+print(boards)
+#boards[1][3] = 12
+#x,y = np.where(boards == 12)
+#x = int(x); y = int(y)
+
 
 def load_image(name, colorkey=None, scale=1):
     fullname = os.path.join(data_dir, name)
@@ -114,6 +152,17 @@ class Chimp(pg.sprite.Sprite):
             self.dizzy = True
             self.original = self.image
 
+class Fishie(pg.sprite.Sprite):
+    def __init__(self):
+        pg.sprite.Sprite.__init__(self)  # call Sprite initializer
+        self.image, self.rect = pg.transform.scale(pg.image.load('data/fishie.png'), (50,50)), (50,50)
+
+class Groundhog(pg.sprite.Sprite):
+    def __init__(self):
+        pg.sprite.Sprite.__init__(self)
+        self.image, self.rect = pg.transform.scale(pg.image.load('data/groundhog.png'), (50,50)), (500,500)
+
+
 
 def main():
     """this function is called when the program starts.
@@ -121,32 +170,23 @@ def main():
     a loop until the function returns."""
     # Initialize Everything
     pg.init()
-    screen = pg.display.set_mode((1280, 480), pg.SCALED)
+    screen = pg.display.set_mode((600, 600), pg.SCALED)
     pg.display.set_caption("Monkey Fever")
     pg.mouse.set_visible(False)
 
     # Create The Background
-    background = pg.Surface(screen.get_size())
-    background = background.convert()
-    background.fill((170, 238, 187))
+    board = pg.transform.scale(pg.image.load('data/BlueBoard.png'), screen.get_size())
+    
 
     # Put Text On The Background, Centered
-    if pg.font:
-        font = pg.font.Font(None, 64)
-        text = font.render("Pummel The Chimp, And Win $$$", True, (10, 10, 10))
-        textpos = text.get_rect(centerx=background.get_width() / 2, y=10)
-        background.blit(text, textpos)
 
     # Display The Background
-    screen.blit(background, (0, 0))
+    screen.blit(board, (0, 0))
     pg.display.flip()
 
-    # Prepare Game Objects
-    whiff_sound = load_sound("whiff.wav")
-    punch_sound = load_sound("punch.wav")
-    chimp = Chimp()
-    fist = Fist()
-    allsprites = pg.sprite.RenderPlain((chimp, fist))
+    fishie = Fishie()
+    groundhog = Groundhog()
+    allsprites = pg.sprite.RenderPlain((fishie, groundhog))
     clock = pg.time.Clock()
 
     # Main Loop
@@ -160,19 +200,11 @@ def main():
                 going = False
             elif event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE:
                 going = False
-            elif event.type == pg.MOUSEBUTTONDOWN:
-                if fist.punch(chimp):
-                    punch_sound.play()  # punch
-                    chimp.punched()
-                else:
-                    whiff_sound.play()  # miss
-            elif event.type == pg.MOUSEBUTTONUP:
-                fist.unpunch()
 
         allsprites.update()
 
         # Draw Everything
-        screen.blit(background, (0, 0))
+        screen.blit(board, (0, 0))
         allsprites.draw(screen)
         pg.display.flip()
 
