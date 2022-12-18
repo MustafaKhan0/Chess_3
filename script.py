@@ -11,18 +11,7 @@ if not pg.mixer:
 main_dir = os.path.split(os.path.abspath(__file__))[0]
 data_dir = os.path.join(main_dir, "data")
 
-xspaces = {
-    0 : 37.5,
-    1 : 112.5,
-    2 : 187.5, 
-    3 : 262.5,
-    4 : 337.5,
-    5 : 412.5,
-    6 : 497.5,
-    7 : 562.5
-}
-
-yspaces = {
+spaces = {
     0 : 37.5,
     1 : 112.5,
     2 : 187.5, 
@@ -43,6 +32,10 @@ boards = np.array([
 boards = np.append(boards, np.zeros((4, 8)), 0)
 boards = np.append(boards, np.array([[210, 211, 212, 213, 214, 215, 216, 217],[220, 230, 240, 250, 260, 241, 231, 221]]), 0)
 print(boards)
+
+
+
+
 #boards[1][3] = 12
 #x,y = np.where(boards == 12)
 #x = int(x); y = int(y)
@@ -76,6 +69,35 @@ def load_sound(name):
 
     return sound
 
+def make_board(orig):
+    bong = []
+    for i, line in enumerate(orig):
+        for j, piece in enumerate(line):
+            if str(piece)[1] == str(1):
+                bong.append(Fishie(piece))
+            elif str(piece)[1] == str(2):
+                #bong.append(Rook)
+                bong.append(2)
+            elif str(piece)[1] == str(3):
+                #bong.append(Knight)
+                bong.append(3)
+            elif str(piece)[1] == str(4):
+                #bong.append(Bishop)
+                bong.append(4)
+            elif str(piece)[1] == str(5):
+                #bong.append(King)
+                bong.append(5)
+            elif str(piece)[1] == str(6):
+                #bong.append(Queen)
+                bong.append(6)
+            else:
+                bong.append(0)
+                print(str(piece)[1])
+    
+    return np.reshape(bong, (8,8))
+
+
+
 class Fist(pg.sprite.Sprite):
     """moves a clenched fist on the screen, following the mouse"""
 
@@ -103,6 +125,7 @@ class Fist(pg.sprite.Sprite):
     def unpunch(self):
         """called to pull the fist back"""
         self.punching = False
+
 
 class Chimp(pg.sprite.Sprite):
     """moves a monkey critter across the screen. it can spin the
@@ -153,7 +176,8 @@ class Chimp(pg.sprite.Sprite):
             self.original = self.image
 
 class Fishie(pg.sprite.Sprite):
-    def __init__(self):
+    def __init__(self, name):
+        self.name = name
         pg.sprite.Sprite.__init__(self)  # call Sprite initializer
         self.image, self.rect = pg.transform.scale(pg.image.load('data/fishie.png'), (50,50)), (50,50)
 
@@ -164,10 +188,13 @@ class Groundhog(pg.sprite.Sprite):
 
 
 
+
 def main():
     """this function is called when the program starts.
     it initializes everything it needs, then runs in
     a loop until the function returns."""
+    pieces = make_board(boards)
+    print(pieces)
     # Initialize Everything
     pg.init()
     screen = pg.display.set_mode((600, 600), pg.SCALED)
@@ -184,9 +211,9 @@ def main():
     screen.blit(board, (0, 0))
     pg.display.flip()
 
-    fishie = Fishie()
+    fishie = Fishie('new')
     groundhog = Groundhog()
-    allsprites = pg.sprite.RenderPlain((fishie, groundhog))
+    allsprites = pg.sprite.RenderPlain([fishie, groundhog])
     clock = pg.time.Clock()
 
     # Main Loop
@@ -205,7 +232,7 @@ def main():
 
         # Draw Everything
         screen.blit(board, (0, 0))
-        allsprites.draw(screen)
+        screen.blit(fishie.image, (37.5,37.5))
         pg.display.flip()
 
     pg.quit()
