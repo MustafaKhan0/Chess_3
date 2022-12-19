@@ -1,6 +1,7 @@
 import pygame as pg
 import os 
 import numpy as np
+from sympy import Range
 
 if not pg.font:
     print("Warning, fonts disabled")
@@ -11,7 +12,7 @@ if not pg.mixer:
 main_dir = os.path.split(os.path.abspath(__file__))[0]
 data_dir = os.path.join(main_dir, "data")
 
-spaces = {
+piece_spaces = {
     0 : 12.5,
     1 : 87.5,
     2 : 162.5, 
@@ -22,8 +23,22 @@ spaces = {
     7 : 537.5
 }
 
+dot_spaces = {
+    0 : 22.5,
+    1 : 97.5,
+    2 : 172.5, 
+    3 : 247.5,
+    4 : 322.5,
+    5 : 397.5,
+    6 : 472.5,
+    7 : 547.5
+}
+
+cursor_range = [(0,73), (73, 148), (148, 223), (223, 298), (298, 373), (373,448), (448, 523), (523, 598)]
+
+
 # Digit 1 : Which instance of that piece it is
-# Digit 2 : 1 = Pawn, 2 = Rook, 3 = Knight, 4 = Bishop, 5 = King, 6 = Queen
+# Digit 2 : 1 = Pawn, 2 = Rook, 3 = Knight, 4 = Bishop, 5 = King, 6 = Queen, 9 = Dot
 # Digit 3 : 1 = White, 2 = Black
 boards = np.array([
     [120, 130, 140, 150, 160, 141, 131, 121],
@@ -101,7 +116,12 @@ def blit_board(board, screen):
     for column, file in enumerate(board):
         for spot, square in enumerate(file):
             if type(square) != int:
-                screen.blit(square.image, (spaces[spot],spaces[column]))
+                screen.blit(square.image, (piece_spaces[spot],piece_spaces[column]))
+
+def check_range(num):
+    for ind,rng in enumerate(cursor_range):
+        if num in range(rng[0],rng[1]):
+            return ind
 
 class Fist(pg.sprite.Sprite):
     """moves a clenched fist on the screen, following the mouse"""
@@ -183,14 +203,41 @@ class Chimp(pg.sprite.Sprite):
 class Fishie(pg.sprite.Sprite):
     def __init__(self, name):
         self.name = name
+        self.box = np.where(boards == int(name))
         pg.sprite.Sprite.__init__(self)  # call Sprite initializer
         self.image, self.rect = pg.transform.scale(pg.image.load('data/fishie.png'), (50,50)), (50,50)
+
+    def create_moves(self):
+        if str(self.name)[0] == '1':
+            boards[self.box[0],self.box[1] - 1] = int(str(self.name) + '0')
+            if self.box[0] == 2 or self.box[0] == 7:
+                boards[self.box[0],self.box[1] - 2] = int(str(self.name) + '1')
+        elif str(self.name)[0] == '2':
+            boards[self.box[0],self.box[1] + 1] = int(str(self.name) + '0')
+            if self.box[0] == 2 or self.box[0] == 7:
+                boards[self.box[0],self.box[1] + 2] = int(str(self.name) + '1')
+
+        if self.box[0] == 2 or self.box[0] == 7:
+            boards[self.box[0],self.box[1] + 2] = int(str(self.name) + '1')
+
+    def close_moves(self):
+        boards[self.box[0],self.box[1] + 1] = 0
+
+        if self.box[0] == 2 or self.box[0] == 7:
+            boards[self.box[0],self.box[1] + 2] = 0
 
 class Groundhog(pg.sprite.Sprite):
     def __init__(self, name):
         self.name = name
         pg.sprite.Sprite.__init__(self)
         self.image, self.rect = pg.transform.scale(pg.image.load('data/groundhog.png'), (50,50)), (50,50)
+
+class Dot(pg.sprite.Sprite):
+    def __init__(self):
+        pg.sprite.Sprite.__init__(self)
+        self.image = pg.transform.scale(pg.image.load('data/dote.png'), (30,30))
+        self.image.set_alpha(175)
+        self.rect = (30,30)  
 
 
 
@@ -207,7 +254,7 @@ def main():
     pg.init()
     screen = pg.display.set_mode((600, 600), pg.SCALED)
     pg.display.set_caption("Monkey Fever")
-    pg.mouse.set_visible(False)
+    pg.mouse.set_visible(True)
 
     # Create The Background
     board = pg.transform.scale(pg.image.load('data/BlueBoard.png'), screen.get_size())
@@ -221,9 +268,10 @@ def main():
 
     fishie = Fishie('new')
     groundhog = Groundhog('anew')
+    dote = Dot()
     allsprites = pg.sprite.RenderPlain([fishie, groundhog])
     clock = pg.time.Clock()
-
+    prev_box = None
     # Main Loop
     going = True
     while going:
@@ -235,14 +283,31 @@ def main():
                 going = False
             elif event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE:
                 going = False
+        
+        if pg.mouse.get_pressed(3)[0] == True:
+            mouse_pos = pg.mouse.get_pos()
+            cur_box = check_range(mouse_pos[0]), check_range(mouse_pos[1])
+            if str(pieces[cur_box[0]][cur_box[1]].name)[1] == '1':
+                #open dots
+                pieces[cur_box[0]][cur_box[1]].create_moves()
+            
+        
+        if prev_box != cur_box:
+            #close dots
+            pieces[cur_box[0]][cur_box[1]].close_moves()
 
+        else:
+            cur_box = None
+        
         allsprites.update()
 
         # Draw Everything
         screen.blit(board, (0, 0))
         blit_board(pieces, screen)
+        screen.blit(dote.image, (dot_spaces[1], dot_spaces[1]))
         pg.display.flip()
 
+        prev_box = cur_box
     pg.quit()
 
 
