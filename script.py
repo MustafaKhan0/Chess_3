@@ -12,14 +12,14 @@ main_dir = os.path.split(os.path.abspath(__file__))[0]
 data_dir = os.path.join(main_dir, "data")
 
 spaces = {
-    0 : 37.5,
-    1 : 112.5,
-    2 : 187.5, 
-    3 : 262.5,
-    4 : 337.5,
-    5 : 412.5,
-    6 : 497.5,
-    7 : 562.5
+    0 : 12.5,
+    1 : 87.5,
+    2 : 162.5, 
+    3 : 237.5,
+    4 : 312.5,
+    5 : 387.5,
+    6 : 462.5,
+    7 : 537.5
 }
 
 # Digit 1 : Which instance of that piece it is
@@ -76,8 +76,7 @@ def make_board(orig):
             if str(piece)[1] == str(1):
                 bong.append(Fishie(piece))
             elif str(piece)[1] == str(2):
-                #bong.append(Rook)
-                bong.append(2)
+                bong.append(Groundhog(piece))
             elif str(piece)[1] == str(3):
                 #bong.append(Knight)
                 bong.append(3)
@@ -96,7 +95,13 @@ def make_board(orig):
     
     return np.reshape(bong, (8,8))
 
+def blit_board(board, screen):
+    #screen.blit(img, (x,y))
 
+    for column, file in enumerate(board):
+        for spot, square in enumerate(file):
+            if type(square) != int:
+                screen.blit(square.image, (spaces[spot],spaces[column]))
 
 class Fist(pg.sprite.Sprite):
     """moves a clenched fist on the screen, following the mouse"""
@@ -182,9 +187,12 @@ class Fishie(pg.sprite.Sprite):
         self.image, self.rect = pg.transform.scale(pg.image.load('data/fishie.png'), (50,50)), (50,50)
 
 class Groundhog(pg.sprite.Sprite):
-    def __init__(self):
+    def __init__(self, name):
+        self.name = name
         pg.sprite.Sprite.__init__(self)
-        self.image, self.rect = pg.transform.scale(pg.image.load('data/groundhog.png'), (50,50)), (500,500)
+        self.image, self.rect = pg.transform.scale(pg.image.load('data/groundhog.png'), (50,50)), (50,50)
+
+
 
 
 
@@ -204,7 +212,7 @@ def main():
     # Create The Background
     board = pg.transform.scale(pg.image.load('data/BlueBoard.png'), screen.get_size())
     
-
+    
     # Put Text On The Background, Centered
 
     # Display The Background
@@ -212,7 +220,7 @@ def main():
     pg.display.flip()
 
     fishie = Fishie('new')
-    groundhog = Groundhog()
+    groundhog = Groundhog('anew')
     allsprites = pg.sprite.RenderPlain([fishie, groundhog])
     clock = pg.time.Clock()
 
@@ -232,7 +240,7 @@ def main():
 
         # Draw Everything
         screen.blit(board, (0, 0))
-        screen.blit(fishie.image, (37.5,37.5))
+        blit_board(pieces, screen)
         pg.display.flip()
 
     pg.quit()
