@@ -1,7 +1,6 @@
 import pygame as pg
 import os 
 import numpy as np
-from sympy import Range
 
 if not pg.font:
     print("Warning, fonts disabled")
@@ -46,8 +45,9 @@ boards = np.array([
 ])
 boards = np.append(boards, np.zeros((4, 8)), 0)
 boards = np.append(boards, np.array([[210, 211, 212, 213, 214, 215, 216, 217],[220, 230, 240, 250, 260, 241, 231, 221]]), 0)
+boards = boards.astype(int)
 print(boards)
-
+ 
 
 
 
@@ -88,7 +88,9 @@ def make_board(orig):
     bong = []
     for i, line in enumerate(orig):
         for j, piece in enumerate(line):
-            if str(piece)[1] == str(1):
+            if len(str(piece)) == 1:
+                bong.append(0)
+            elif str(piece)[1] == str(1):
                 bong.append(Fishie(piece))
             elif str(piece)[1] == str(2):
                 bong.append(Groundhog(piece))
@@ -203,22 +205,25 @@ class Chimp(pg.sprite.Sprite):
 class Fishie(pg.sprite.Sprite):
     def __init__(self, name):
         self.name = name
-        self.box = np.where(boards == int(name))
+        self.box = np.where(boards == int(self.name))
         pg.sprite.Sprite.__init__(self)  # call Sprite initializer
         self.image, self.rect = pg.transform.scale(pg.image.load('data/fishie.png'), (50,50)), (50,50)
 
     def create_moves(self):
+        # determines which color it is
         if str(self.name)[0] == '1':
-            boards[self.box[0],self.box[1] - 1] = int(str(self.name) + '0')
+            boards[self.box[0],self.box[1] + 1] = int(str(self.name) + '0')
             if self.box[0] == 2 or self.box[0] == 7:
                 boards[self.box[0],self.box[1] - 2] = int(str(self.name) + '1')
         elif str(self.name)[0] == '2':
-            boards[self.box[0],self.box[1] + 1] = int(str(self.name) + '0')
+            boards[self.box[0],self.box[1] - 1] = int(str(self.name) + '0')
             if self.box[0] == 2 or self.box[0] == 7:
                 boards[self.box[0],self.box[1] + 2] = int(str(self.name) + '1')
 
         if self.box[0] == 2 or self.box[0] == 7:
             boards[self.box[0],self.box[1] + 2] = int(str(self.name) + '1')
+        
+        print(boards)
 
     def close_moves(self):
         boards[self.box[0],self.box[1] + 1] = 0
@@ -266,10 +271,7 @@ def main():
     screen.blit(board, (0, 0))
     pg.display.flip()
 
-    fishie = Fishie('new')
-    groundhog = Groundhog('anew')
     dote = Dot()
-    allsprites = pg.sprite.RenderPlain([fishie, groundhog])
     clock = pg.time.Clock()
     prev_box = None
     # Main Loop
@@ -287,19 +289,20 @@ def main():
         if pg.mouse.get_pressed(3)[0] == True:
             mouse_pos = pg.mouse.get_pos()
             cur_box = check_range(mouse_pos[0]), check_range(mouse_pos[1])
-            if str(pieces[cur_box[0]][cur_box[1]].name)[1] == '1':
+            if type(pieces[cur_box[0]][cur_box[1]]) == int:
+                cur_box = check_range(mouse_pos[0]), check_range(mouse_pos[1])
+            elif str(pieces[cur_box[0]][cur_box[1]].name)[1] == '1':
                 #open dots
-                pieces[cur_box[0]][cur_box[1]].create_moves()
+                pieces[cur_box [0]][cur_box[1]].create_moves()
             
-        
-        if prev_box != cur_box:
-            #close dots
-            pieces[cur_box[0]][cur_box[1]].close_moves()
-
-        else:
+        else: 
             cur_box = None
         
-        allsprites.update()
+        if prev_box != cur_box and prev_box != None and type(pieces[prev_box[0]][prev_box[1]]) != int:
+            #close dots
+            pieces[prev_box[0]][prev_box[1]].close_moves()
+
+        
 
         # Draw Everything
         screen.blit(board, (0, 0))
