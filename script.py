@@ -130,7 +130,10 @@ def blit_board(board, screen):
     for column, file in enumerate(board):
         for spot, square in enumerate(file):
             if type(square) != int:
-                screen.blit(square.image, (piece_spaces[spot],piece_spaces[column]))
+                if int(square.name) >= 1000:
+                    screen.blit(square.image, (dot_spaces[spot],dot_spaces[column]))
+                else:
+                    screen.blit(square.image, (piece_spaces[spot],piece_spaces[column]))
 
 def check_range(num):
     # Goes through the cursor ranges and it fings which one the input number is in
@@ -227,23 +230,27 @@ class Fishie(pg.sprite.Sprite):
         self.image, self.rect = pg.transform.scale(pg.image.load('data/fishie.png'), (50,50)), (50,50)
 
     # Creates the dots of possible moves for a pawn
-    def create_moves(self):
+    def create_moves(self, price):
         # determines which color it is (for top or bottom)
         if str(self.name)[0] == '1': #White
             # Takes the box that is one below the box of the piece and places a number
             # Which is 4 digits, and has the identifier appended to the end of the piece name
-            boards[self.box[0] + 1 ,self.box[1]] = int(str(self.name) + '0') 
+            boards[self.box[0] + 1 ,self.box[1]] = int(str(self.name) + '0')
+            price[self.box[0] + 1, self.box[1]] = Dot(boards[self.box[0] + 1 ,self.box[1]])
             # If it is on the 2 or 7th rank then it can move two spaces so it adds that box
             if self.box[0] == 1 or self.box[0] == 6:
                 boards[self.box[0] + 2,self.box[1]] = int(str(self.name) + '1')
+                price[self.box[0] + 2, self.box[1]] = Dot(boards[self.box[0] + 2,self.box[1]])
             print(boards)
         elif str(self.name)[0] == '2': # Black
             # Takes the box that is one above the box of the piece and places a number
             # Which is 4 digits, and has the identifier appended to the end of the piece name
             boards[self.box[0] - 1,self.box[1]] = int(str(self.name) + '0')
+            price[self.box[0] - 1, self.box[1]] = Dot(boards[self.box[0] - 1,self.box[1]])
             # If it is on the 2 or 7th rank then it can move two spaces so it adds that box
             if self.box[0] == 1 or self.box[0] == 6:
                 boards[self.box[0] - 2,self.box[1]] = int(str(self.name) + '1')
+                price[self.box[0] - 2, self.box[1]] = Dot(boards[self.box[0] - 2,self.box[1]])
             print(boards)
         else: 
             print(boards)
@@ -252,23 +259,27 @@ class Fishie(pg.sprite.Sprite):
         
     
     # Removes the moves created
-    def close_moves(self):
+    def close_moves(self, price):
         # determines which color it is (for top or bottom)
         if str(self.name)[0] == '1': #White
             # Takes the box that is one below the box of the piece and places a number
             # Which is 4 digits, and has the identifier appended to the end of the piece name
             boards[self.box[0] + 1,self.box[1]] = 0
+            price[self.box[0] + 1, self.box[1]] = 0
             # If it is on the 2 or 7th rank then it can move two spaces so it adds that box
             if self.box[0] == 1 or self.box[0] == 6:
                 boards[self.box[0] + 2,self.box[1]] = 0
+                price[self.box[0] + 2, self.box[1]] = 0
             print(boards)
         elif str(self.name)[0] == '2': # Black
             # Takes the box that is one above the box of the piece and places a number
             # Which is 4 digits, and has the identifier appended to the end of the piece name
             boards[self.box[0] - 1,self.box[1]] = 0
+            price[self.box[0] - 1, self.box[1]] = 0
             # If it is on the 2 or 7th rank then it can move two spaces so it adds that box
             if self.box[0] == 1 or self.box[0] == 6:
                 boards[self.box[0] - 2,self.box[1]] = 0
+                price[self.box[0] - 2, self.box[1]] = 0
             print(boards)
 
 
@@ -279,11 +290,12 @@ class Groundhog(pg.sprite.Sprite):
         self.image, self.rect = pg.transform.scale(pg.image.load('data/groundhog.png'), (50,50)), (50,50)
 
 class Dot(pg.sprite.Sprite):
-    def __init__(self):
+    def __init__(self, name):
         pg.sprite.Sprite.__init__(self)
         self.image = pg.transform.scale(pg.image.load('data/dote.png'), (30,30))
         self.image.set_alpha(175)
         self.rect = (30,30)  
+        self.name = name
 
 
 
@@ -312,7 +324,6 @@ def main():
     screen.blit(board, (0, 0)) # displays board to screen
     pg.display.flip()
 
-    dote = Dot() # New instance of dot
     clock = pg.time.Clock()
     prev_box = None 
     # Main Loop
@@ -334,15 +345,15 @@ def main():
                 cur_box = check_range(mouse_pos[1]), check_range(mouse_pos[0]) # Doing nothing, rewrite this if statement
             elif str(pieces[cur_box[0]][cur_box[1]].name)[1] == '1': # If is a pawn, make the moves - later will be all pieces
                 #open dots
-                pieces[cur_box[0]][cur_box[1]].create_moves() # Uses method to make moves
+                pieces[cur_box[0]][cur_box[1]].create_moves(pieces) # Uses method to make moves
             
         else: 
             cur_box = None
         
         # If we have switched boxes and the previous box wasn't none and that the previous box selected wasn't a 0/space
-        if prev_box != cur_box and prev_box != None and type(pieces[prev_box[0]][prev_box[1]]) != int: 
-            #close dots
-            pieces[prev_box[0]][prev_box[1]].close_moves()
+        # This logic is the messed up part - needs to be fixed
+        if (prev_box and cur_box != None) and (prev_box != cur_box):
+            pieces[prev_box[0]][prev_box[1]].close_moves(pieces)
 
 
         
@@ -350,7 +361,6 @@ def main():
         # Draw Everything
         screen.blit(board, (0, 0))
         blit_board(pieces, screen) # Custom function which prints the entire board to the screen
-        screen.blit(dote.image, (dot_spaces[1], dot_spaces[1]))
         pg.display.flip()
 
         prev_box = cur_box
