@@ -326,6 +326,7 @@ def main():
 
     clock = pg.time.Clock()
     prev_box = None 
+    cur_box = None
     # Main Loop
     going = True
     while going:
@@ -346,18 +347,18 @@ def main():
             elif str(pieces[cur_box[0]][cur_box[1]].name)[1] == '1': # If is a pawn, make the moves - later will be all pieces
                 #open dots
                 pieces[cur_box[0]][cur_box[1]].create_moves(pieces) # Uses method to make moves
+            elif pieces[cur_box[0]][cur_box[1]].name >= 1000:
+                piece_move = str(pieces[cur_box[0]][cur_box[1]].name)[1:-2]
+                ind = np.where(boards == int(piece_move))
+                boards[cur_box[0]][cur_box[1]] = piece_move
+                pieces[cur_box[0]][cur_box[1]] = pieces[ind[0]][ind[1]]
+                boards[ind[0]][ind[1]] = 0
+                pieces[ind[0]][ind[1]] = 0
             
-        else: 
-            cur_box = None
-        
-        # If we have switched boxes and the previous box wasn't none and that the previous box selected wasn't a 0/space
-        # This logic is the messed up part - needs to be fixed
-        if (prev_box and cur_box != None) and (prev_box != cur_box): # if different box is selected second part of conditional is broken
-            pieces[prev_box[0]][prev_box[1]].close_moves(pieces) #draws new movement
+            if (prev_box != None) and (prev_box != cur_box): # if clicked (nested if) and the previous box has been set and the previous box and current box are different
+                pieces[prev_box[0]][prev_box[1]].close_moves(pieces) # closes movement
+            
           
-           
-
-
 
         
 
