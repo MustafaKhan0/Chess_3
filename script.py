@@ -266,7 +266,7 @@ class Fishie(pg.sprite.Sprite):
             # Which is 4 digits, and has the identifier appended to the end of the piece name
             boards[self.box[0] + 1,self.box[1]] = 0
             price[self.box[0] + 1, self.box[1]] = 0
-            # If it is on the 2 or 7th rank then it can move two spaces so it adds that box
+            # If it is on the 2nd or 7th rank then it can move two spaces so it adds that box
             if self.box[0] == 1 or self.box[0] == 6:
                 boards[self.box[0] + 2,self.box[1]] = 0
                 price[self.box[0] + 2, self.box[1]] = 0
@@ -352,8 +352,11 @@ def main():
         
         # If we have switched boxes and the previous box wasn't none and that the previous box selected wasn't a 0/space
         # This logic is the messed up part - needs to be fixed
-        if (prev_box and cur_box != None) and (prev_box != cur_box):
-            pieces[prev_box[0]][prev_box[1]].close_moves(pieces)
+        if (prev_box and cur_box != None) and (prev_box != cur_box): # if different box is selected second part of conditional is broken
+            pieces[prev_box[0]][prev_box[1]].close_moves(pieces) #draws new movement
+          
+           
+
 
 
         
