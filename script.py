@@ -48,6 +48,7 @@ boards = np.array([
 boards = np.append(boards, np.zeros((4, 8)), 0)
 boards = np.append(boards, np.array([[210, 211, 212, 213, 214, 215, 216, 217],[220, 230, 240, 250, 260, 241, 231, 221]]), 0)
 boards = boards.astype(int)
+
 print(boards)
  
 
@@ -348,7 +349,7 @@ def main():
                     ind1, ind2 = np.where(boards == int(piece_move))
                     print(ind1,ind2)
                     print(pieces[cur_box[0]][cur_box[1]].name)
-                    print(int(ind1), int(ind2))
+                    print(ind1, ind2)
                     ind1 = int(ind1); ind2 = int(ind2)
                     pieces[ind1][ind2].close_moves(pieces)
                     boards[cur_box[0]][cur_box[1]] = piece_move
