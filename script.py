@@ -238,7 +238,7 @@ class Fishie(pg.sprite.Sprite):
             boards[self.box[0] + 1 ,self.box[1]] = int(str(self.name) + '0')
             price[self.box[0] + 1, self.box[1]] = Dot(boards[self.box[0] + 1 ,self.box[1]])
             # If it is on the 2 or 7th rank then it can move two spaces so it adds that box
-            if self.box[0] == 1 or self.box[0] == 6:
+            if self.box[0] == 1:
                 boards[self.box[0] + 2,self.box[1]] = int(str(self.name) + '1')
                 price[self.box[0] + 2, self.box[1]] = Dot(boards[self.box[0] + 2,self.box[1]])
             print(boards)
@@ -248,7 +248,7 @@ class Fishie(pg.sprite.Sprite):
             boards[self.box[0] - 1,self.box[1]] = int(str(self.name) + '0')
             price[self.box[0] - 1, self.box[1]] = Dot(boards[self.box[0] - 1,self.box[1]])
             # If it is on the 2 or 7th rank then it can move two spaces so it adds that box
-            if self.box[0] == 1 or self.box[0] == 6:
+            if self.box[0] == 6:
                 boards[self.box[0] - 2,self.box[1]] = int(str(self.name) + '1')
                 price[self.box[0] - 2, self.box[1]] = Dot(boards[self.box[0] - 2,self.box[1]])
             print(boards)
@@ -267,7 +267,7 @@ class Fishie(pg.sprite.Sprite):
             boards[self.box[0] + 1,self.box[1]] = 0
             price[self.box[0] + 1, self.box[1]] = 0
             # If it is on the 2nd or 7th rank then it can move two spaces so it adds that box
-            if (self.box[0] == 1 or self.box[0] == 6):
+            if (self.box[0] == 1):
                 boards[self.box[0] + 2,self.box[1]] = 0
                 price[self.box[0] + 2, self.box[1]] = 0
             print(boards)
@@ -277,7 +277,7 @@ class Fishie(pg.sprite.Sprite):
             boards[self.box[0] - 1,self.box[1]] = 0
             price[self.box[0] - 1, self.box[1]] = 0
             # If it is on the 2 or 7th rank then it can move two spaces so it adds that box
-            if (self.box[0] == 1 or self.box[0] == 6):
+            if (self.box[0] == 6):
                 boards[self.box[0] - 2,self.box[1]] = 0
                 price[self.box[0] - 2, self.box[1]] = 0
             print(boards)
@@ -344,18 +344,21 @@ def main():
             cur_box = check_range(mouse_pos[1]), check_range(mouse_pos[0]) # Inputs the box which the mouse is in
             if type(pieces[cur_box[0]][cur_box[1]]) != int: # If it is a 0, do nothing
                 if pieces[cur_box[0]][cur_box[1]].name >= 1000:
-                    piece_move = str(pieces[cur_box[0]][cur_box[1]].name)[1:-2]
+                    piece_move = str(int(pieces[cur_box[0]][cur_box[1]].name))[:-1]
                     ind1, ind2 = np.where(boards == int(piece_move))
                     print(ind1,ind2)
-                    print(pieces[cur_box[0]][cur_box[1]].name)
+                    print(piece_move)
                     print(int(ind1), int(ind2))
                     ind1 = int(ind1); ind2 = int(ind2)
                     pieces[ind1][ind2].close_moves(pieces)
-                    boards[cur_box[0]][cur_box[1]] = piece_move
-                    pieces[cur_box[0]][cur_box[1]] = pieces[ind1][ind2]
+                    print(boards)
+                    boards[cur_box[0]][cur_box[1]] = int(piece_move)
+                    print(boards)
+                    pieces[cur_box[0]][cur_box[1]] = pieces[int(ind1)][int(ind2)]
                     boards[int(ind1)][int(ind2)] = 0
+                    print(boards)
                     pieces[int(ind1)][int(ind2)] = 0
-                    pieces[cur_box[0]][cur_box[1]].box = ind1,ind2
+                    pieces[cur_box[0]][cur_box[1]].box = int(cur_box[0]),int(cur_box[1])
                     
                 elif str(pieces[cur_box[0]][cur_box[1]].name)[1] == '1': # If is a pawn, make the moves - later will be all pieces
                     #open dots
