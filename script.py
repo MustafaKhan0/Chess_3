@@ -264,6 +264,9 @@ class Fishie(pg.sprite.Sprite):
         if str(self.name)[0] == '1': #White
             # Takes the box that is one below the box of the piece and places a number
             # Which is 4 digits, and has the identifier appended to the end of the piece name
+            if self.box[0] == 7:
+                # Add logic for turning into fishie queen
+                self.box[0] = 7 # Placeholder code, delete when actually implement it
             boards[self.box[0] + 1,self.box[1]] = 0
             price[self.box[0] + 1, self.box[1]] = 0
             # If it is on the 2nd or 7th rank then it can move two spaces so it adds that box
@@ -274,6 +277,10 @@ class Fishie(pg.sprite.Sprite):
         elif str(self.name)[0] == '2': # Black
             # Takes the box that is one above the box of the piece and places a number
             # Which is 4 digits, and has the identifier appended to the end of the piece name
+            if self.box[0] == 0:
+                # Add logic for turning into fishie queen
+                self.box[0] = 0 # Placeholder code, delete when actually implement it
+            
             boards[self.box[0] - 1,self.box[1]] = 0
             price[self.box[0] - 1, self.box[1]] = 0
             # If it is on the 2 or 7th rank then it can move two spaces so it adds that box
