@@ -1,6 +1,6 @@
 import pygame as pg  # imports pyagme library with the shorthand name of pg
 import os  # imports os, a python native libarary which deals with files and paths
-import numpy as np # imports numpy, if you don't know what numpy is you should go fuck you'reself
+import numpy as np # imports numpy, a python library with math, arrays, and a lot of stuff. For this, mostly arrays
 
 
 main_dir = os.path.split(os.path.abspath(__file__))[0] # establishes the defualt absolute path to the directory where this is run/located on a computer
@@ -48,6 +48,10 @@ boards = np.array([
 boards = np.append(boards, np.zeros((4, 8)), 0)
 boards = np.append(boards, np.array([[210, 211, 212, 213, 214, 215, 216, 217],[220, 230, 240, 250, 260, 241, 231, 221]]), 0)
 boards = boards.astype(int)
+
+dtos = np.array(np.zeros((8,8)))
+dotes = np.array(np.zeros((8,8)))
+dtos.astype(int)
 print(boards)
  
 
@@ -136,89 +140,13 @@ def blit_board(board, screen):
                     screen.blit(square.image, (piece_spaces[spot],piece_spaces[column]))
 
 def check_range(num):
-    # Goes through the cursor ranges and it fings which one the input number is in
+    # Goes through the cursor ranges and it finds which one the input number is in
     # Returns index/which number range it is in/which square it is in
     for ind,rng in enumerate(cursor_range):
         if num in range(rng[0],rng[1]):
             return ind
 
 # Example class
-class Fist(pg.sprite.Sprite):
-    """moves a clenched fist on the screen, following the mouse"""
-
-    def __init__(self):
-        pg.sprite.Sprite.__init__(self)  # call Sprite initializer
-        self.image, self.rect = load_image("fist.bmp", -1)
-        self.fist_offset = (-235, -80)
-        self.punching = False
-
-    def update(self):
-        """move the fist based on the mouse position"""
-        pos = pg.mouse.get_pos()
-        self.rect.topleft = pos
-        self.rect.move_ip(self.fist_offset)
-        if self.punching:
-            self.rect.move_ip(15, 25)
-
-    def punch(self, target):
-        """returns true if the fist collides with the target"""
-        if not self.punching:
-            self.punching = True
-            hitbox = self.rect.inflate(-5, -5)
-            return hitbox.colliderect(target.rect)
-
-    def unpunch(self):
-        """called to pull the fist back"""
-        self.punching = False
-
-# Example class
-class Chimp(pg.sprite.Sprite):
-    """moves a monkey critter across the screen. it can spin the
-    monkey when it is punched."""
-
-    def __init__(self):
-        pg.sprite.Sprite.__init__(self)  # call Sprite initializer
-        self.image, self.rect = load_image("chimp.bmp", -1, 4)
-        screen = pg.display.get_surface()
-        self.area = screen.get_rect()
-        self.rect.topleft = 10, 90
-        self.move = 18
-        self.dizzy = False
-
-    def update(self):
-        """walk or spin, depending on the monkeys state"""
-        if self.dizzy:
-            self._spin()
-        else:
-            self._walk()
-
-    def _walk(self):
-        """move the monkey across the screen, and turn at the ends"""
-        newpos = self.rect.move((self.move, 0))
-        if not self.area.contains(newpos):
-            if self.rect.left < self.area.left or self.rect.right > self.area.right:
-                self.move = -self.move
-                newpos = self.rect.move((self.move, 0))
-                self.image = pg.transform.flip(self.image, True, False)
-        self.rect = newpos
-
-    def _spin(self):
-        """spin the monkey image"""
-        center = self.rect.center
-        self.dizzy = self.dizzy + 12
-        if self.dizzy >= 360:
-            self.dizzy = False
-            self.image = self.original
-        else:
-            rotate = pg.transform.rotate
-            self.image = rotate(self.original, self.dizzy)
-        self.rect = self.image.get_rect(center=center)
-
-    def punched(self):
-        """this will cause the monkey to start spinning"""
-        if not self.dizzy:
-            self.dizzy = True
-            self.original = self.image
 
 # Fishie class
 class Fishie(pg.sprite.Sprite):
@@ -235,22 +163,38 @@ class Fishie(pg.sprite.Sprite):
         if str(self.name)[0] == '1': #White
             # Takes the box that is one below the box of the piece and places a number
             # Which is 4 digits, and has the identifier appended to the end of the piece name
-            boards[self.box[0] + 1 ,self.box[1]] = int(str(self.name) + '0')
-            price[self.box[0] + 1, self.box[1]] = Dot(boards[self.box[0] + 1 ,self.box[1]])
+            dtos[self.box[0] + 1 ,self.box[1]] = int(str(self.name) + '0')
+            print(dtos[self.box[0] + 1 ,self.box[1]])
+            dotes[self.box[0] + 1, self.box[1]] = Dot(dtos[self.box[0] + 1 ,self.box[1]])
             # If it is on the 2 or 7th rank then it can move two spaces so it adds that box
             if self.box[0] == 1:
-                boards[self.box[0] + 2,self.box[1]] = int(str(self.name) + '1')
-                price[self.box[0] + 2, self.box[1]] = Dot(boards[self.box[0] + 2,self.box[1]])
+                dtos[self.box[0] + 2,self.box[1]] = int(str(self.name) + '1')
+                dotes[self.box[0] + 2, self.box[1]] = Dot(dtos[self.box[0] + 2,self.box[1]])
+            
+            if str(boards[self.box[0]+1, self.box[1]-1])[0] == '2':
+                dtos[self.box[0] + 1, self.box[1]-1] = int(str(self.name) + '2')
+                dotes[self.box[0] + 1, self.box[1]-1] = Dot(dtos[self.box[0] + 1, self.box[1]-1])
+            if str(boards[self.box[0]+1, self.box[1]+1])[0] == '2':
+                dtos[self.box[0] + 1, self.box[1]+1] = int(str(self.name) + '3')
+                dotes[self.box[0] + 1, self.box[1]+1] = Dot(dtos[self.box[0] + 1, self.box[1]+1])
+            
             print(boards)
         elif str(self.name)[0] == '2': # Black
             # Takes the box that is one above the box of the piece and places a number
             # Which is 4 digits, and has the identifier appended to the end of the piece name
-            boards[self.box[0] - 1,self.box[1]] = int(str(self.name) + '0')
-            price[self.box[0] - 1, self.box[1]] = Dot(boards[self.box[0] - 1,self.box[1]])
+            dtos[self.box[0] - 1,self.box[1]] = int(str(self.name) + '0')
+            dotes[self.box[0] - 1, self.box[1]] = Dot(dtos[self.box[0] - 1,self.box[1]])
             # If it is on the 2 or 7th rank then it can move two spaces so it adds that box
             if self.box[0] == 6:
-                boards[self.box[0] - 2,self.box[1]] = int(str(self.name) + '1')
-                price[self.box[0] - 2, self.box[1]] = Dot(boards[self.box[0] - 2,self.box[1]])
+                dtos[self.box[0] - 2,self.box[1]] = int(str(self.name) + '1')
+                dotes[self.box[0] - 2, self.box[1]] = Dot(dtos[self.box[0] - 2,self.box[1]])
+            
+            if str(boards[self.box[0]-1, self.box[1]-1])[0] == '1':
+                dtos[self.box[0] - 1, self.box[1]-1] = int(str(self.name) + '2')
+                dotes[self.box[0] - 1, self.box[1]-1] = Dot(dtos[self.box[0] - 1, self.box[1]-1])
+            if str(boards[self.box[0]-1, self.box[1]+1])[0] == '1':
+                dtos[self.box[0] - 1, self.box[1]+1] = int(str(self.name) + '3')
+                dotes[self.box[0] - 1, self.box[1]+1] = Dot(dtos[self.box[0] - 1, self.box[1]+1])
             print(boards)
         else: 
             print(boards)
@@ -266,27 +210,27 @@ class Fishie(pg.sprite.Sprite):
             # Which is 4 digits, and has the identifier appended to the end of the piece name
             if self.box[0] == 7:
                 # Add logic for turning into fishie queen
-                self.box[0] = 7 # Placeholder code, delete when actually implement it
-            boards[self.box[0] + 1,self.box[1]] = 0
-            price[self.box[0] + 1, self.box[1]] = 0
+                print('im a fishie queen now') # Placeholder code, delete when actually implement it
+            dtos[self.box[0] + 1,self.box[1]] = 0
+            dotes[self.box[0] + 1, self.box[1]] = 0
             # If it is on the 2nd or 7th rank then it can move two spaces so it adds that box
             if (self.box[0] == 1):
-                boards[self.box[0] + 2,self.box[1]] = 0
-                price[self.box[0] + 2, self.box[1]] = 0
+                dtos[self.box[0] + 2,self.box[1]] = 0
+                dotes[self.box[0] + 2, self.box[1]] = 0
             print(boards)
         elif str(self.name)[0] == '2': # Black
             # Takes the box that is one above the box of the piece and places a number
             # Which is 4 digits, and has the identifier appended to the end of the piece name
             if self.box[0] == 0:
                 # Add logic for turning into fishie queen
-                self.box[0] = 0 # Placeholder code, delete when actually implement it
+                print('im a fishie queen now') # Placeholder code, delete when actually implement it
             
-            boards[self.box[0] - 1,self.box[1]] = 0
-            price[self.box[0] - 1, self.box[1]] = 0
+            dtos[self.box[0] - 1,self.box[1]] = 0
+            dotes[self.box[0] - 1, self.box[1]] = 0
             # If it is on the 2 or 7th rank then it can move two spaces so it adds that box
             if (self.box[0] == 6):
-                boards[self.box[0] - 2,self.box[1]] = 0
-                price[self.box[0] - 2, self.box[1]] = 0
+                dtos[self.box[0] - 2,self.box[1]] = 0
+                dotes[self.box[0] - 2, self.box[1]] = 0
             print(boards)
 
 
@@ -295,6 +239,8 @@ class Groundhog(pg.sprite.Sprite):
         self.name = name
         pg.sprite.Sprite.__init__(self)
         self.image, self.rect = pg.transform.scale(pg.image.load('data/groundhog.png'), (50,50)), (50,50)
+
+        
 
 class Dot(pg.sprite.Sprite):
     def __init__(self, name):
