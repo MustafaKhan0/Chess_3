@@ -50,7 +50,6 @@ boards = np.append(boards, np.array([[210, 211, 212, 213, 214, 215, 216, 217],[2
 boards = boards.astype(int)
 
 dtos = np.array(np.zeros((8,8)))
-dotes = np.array(np.zeros((8,8)))
 dtos.astype(int)
 print(boards)
  
@@ -94,7 +93,15 @@ def make_board(orig):
     # Goes through the entire array piece by piece
 
     # First by the horizontal/ rank
+    if orig[0][0] == 0:
+            bong = [0]
+            bong = bong * 63
+            bong.append(Dot(0))
+            return np.reshape(bong, (8,8))
+
     for i, line in enumerate(orig):
+
+        
         # Then within rank, it goes by "file"
         for j, piece in enumerate(line):
             # If it's length is 1, it has to be a 0 and is a pawn
@@ -133,11 +140,12 @@ def blit_board(board, screen):
     # Does this through using the image variable within each instance of a piece
     for column, file in enumerate(board):
         for spot, square in enumerate(file):
-            if type(square) != int:
-                if int(square.name) >= 1000:
-                    screen.blit(square.image, (dot_spaces[spot],dot_spaces[column]))
-                else:
-                    screen.blit(square.image, (piece_spaces[spot],piece_spaces[column]))
+            if type(square) is int or type(square) is float: continue
+
+            elif int(square.name) >= 1000:
+                screen.blit(square.image, (dot_spaces[spot],dot_spaces[column]))
+            else:
+                screen.blit(square.image, (piece_spaces[spot],piece_spaces[column]))
 
 def check_range(num):
     # Goes through the cursor ranges and it finds which one the input number is in
@@ -146,9 +154,26 @@ def check_range(num):
         if num in range(rng[0],rng[1]):
             return ind
 
+
 # Example class
 
 # Fishie class
+
+class Dot(pg.sprite.Sprite):
+    def __init__(self, name):
+        pg.sprite.Sprite.__init__(self)
+        self.image = pg.transform.scale(pg.image.load('data/dote.png'), (30,30))
+        self.image.set_alpha(175)
+        self.rect = (30,30)  
+        self.name = name
+
+    def my_fav(self):
+        self.rect = (30,30)
+
+
+dotes = make_board(dtos)
+
+
 class Fishie(pg.sprite.Sprite):
     # ttvtommyinit
     def __init__(self, name):
@@ -242,13 +267,6 @@ class Groundhog(pg.sprite.Sprite):
 
         
 
-class Dot(pg.sprite.Sprite):
-    def __init__(self, name):
-        pg.sprite.Sprite.__init__(self)
-        self.image = pg.transform.scale(pg.image.load('data/dote.png'), (30,30))
-        self.image.set_alpha(175)
-        self.rect = (30,30)  
-        self.name = name
 
 
 
@@ -260,6 +278,7 @@ def main():
     it initializes everything it needs, then runs in
     a loop until the function returns."""
     pieces = make_board(boards) # Turns numbers into object instances
+    
     print(pieces)
     # Initialize Everything
     pg.init()
@@ -327,6 +346,7 @@ def main():
         # Draw Everything
         screen.blit(board, (0, 0))
         blit_board(pieces, screen) # Custom function which prints the entire board to the screen
+        blit_board(dotes, screen)
         pg.display.flip()
 
         prev_box = cur_box
