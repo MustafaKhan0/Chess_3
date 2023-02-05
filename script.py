@@ -63,6 +63,11 @@ boards = np.append(boards, np.zeros((4, 8)), 0)
 boards = np.append(boards, np.array([[210, 211, 212, 213, 214, 215, 216, 217],[220, 230, 240, 250, 260, 241, 231, 221]]), 0)
 boards = boards.astype(int)
 
+turn_dict = {
+    '1' : '2',
+    '2' : '1'
+}
+
 dtos = np.array(np.zeros((8,8)))
 dtos.astype(int)
 print(boards)
@@ -263,77 +268,31 @@ class Fishie(pg.sprite.Sprite):
     def create_moves(self):
         # determines which color it is (for top or bottom)
         if str(self.name)[0] == '1': #White
-            # Takes the box that is one below the box of the piece and places a number
-            # Which is 4 digits, and has the identifier appended to the end of the piece name
-            #dtos[self.box[0] + 1 ,self.box[1]] = int(str(self.name) + '0')
-            nice(self.box[0], self.box[1], 2, 1, 0, int(str(self.name) + '00'))
-            #dotes[self.box[0] + 1, self.box[1]] = Dot(dtos[self.box[0] + 1 ,self.box[1]])
-            #nice(self.box[0], self.box[1], 3, 1, 0)
-            # If it is on the 2 or 7th rank then it can move two spaces so it adds that box
+            if nice(self.box[0], self.box[1], 1, 1, 0) == '0':
+                nice(self.box[0], self.box[1], 2, 1, 0, int(str(self.name) + '00'))
+
             if self.box[0] == 1:
                 nice(self.box[0], self.box[1], 2, 2, 0, int(str(self.name) + '01'))
-                #nice(self.box[0], self.box[1], 3, 2, 0)
             
             if nice(self.box[0], self.box[1], 1, 1, -1) == '2':
                 nice(self.box[0], self.box[1], 2, 1, -1, int(str(self.name) + '02'))
-                #nice(self.box[0], self.box[1], 3, 1, -1)
             if nice(self.box[0], self.box[1], 1, 1, 1) == '2':
                 nice(self.box[0], self.box[1], 2, 1, 1, int(str(self.name) + '03'))
-                #nice(self.box[0], self.box[1], 3, 1, 1)
-            
-            #region
-            # DEP
-            #if self.box[0] == 1:
-            #    dtos[self.box[0] + 2,self.box[1]] = int(str(self.name) + '1')
-            #    dotes[self.box[0] + 2, self.box[1]] = Dot(dtos[self.box[0] + 2,self.box[1]])
-            #
-            #if nice(self.box[0], self.box[1], 1, 1, -1) == '2':
-            #    
-            #    dtos[self.box[0] + 1, self.box[1]-1] = int(str(self.name) + '2')
-            #    dotes[self.box[0] + 1, self.box[1]-1] = Dot(dtos[self.box[0] + 1, self.box[1]-1])
-            #if nice(self.box[0], self.box[1], 1, 1, 1) == '2':
-            #    dtos[self.box[0] + 1, self.box[1]+1] = int(str(self.name) + '3')
-            #    dotes[self.box[0] + 1, self.box[1]+1] = Dot(dtos[self.box[0] + 1, self.box[1]+1])
-            #endregion
+
 
         elif str(self.name)[0] == '2': # Black
-            # Takes the box that is one above the box of the piece and places a number
-            # Which is 4 digits, and has the identifier appended to the end of the piece name
+            if nice(self.box[0], self.box[1], 1, -1, 0) == '0':
+                nice(self.box[0], self.box[1], 2, -1, 0, int(str(self.name) + '00'))
 
-            #dtos[self.box[0] - 1,self.box[1]] = int(str(self.name) + '0')
-            #dotes[self.box[0] - 1, self.box[1]] = Dot(dtos[self.box[0] - 1,self.box[1]])
-
-            nice(self.box[0], self.box[1], 2, -1, 0, int(str(self.name) + '00'))
-            #nice(self.box[0], self.box[1], 3, -1, 0)
-            # If it is on the 2 or 7th rank then it can move two spaces so it adds that box
             if self.box[0] == 6:
                 nice(self.box[0], self.box[1], 2, -2, 0, int(str(self.name) + '01'))
-                #nice(self.box[0], self.box[1], 3, -2, 0)
             
             if nice(self.box[0], self.box[1], 1, -1, -1) == '1':
                 nice(self.box[0], self.box[1], 2, -1, -1, int(str(self.name) + '02'))
-                #nice(self.box[0], self.box[1], 3, -1, -1)
             if nice(self.box[0], self.box[1], 1, -1, 1) == '1':
                 nice(self.box[0], self.box[1], 2, -1, 1, int(str(self.name) + '03'))
-                #nice(self.box[0], self.box[1], 3, -1, 1)
 
-            #DEP 
-            #region
-            #dtos[self.box[0] - 1,self.box[1]] = int(str(self.name) + '0')
-            #dotes[self.box[0] - 1, self.box[1]] = Dot(dtos[self.box[0] - 1,self.box[1]])
-            ## If it is on the 2 or 7th rank then it can move two spaces so it adds that box
-            #if self.box[0] == 6:
-            #    dtos[self.box[0] - 2,self.box[1]] = int(str(self.name) + '1')
-            #    dotes[self.box[0] - 2, self.box[1]] = Dot(dtos[self.box[0] - 2,self.box[1]])
-            #
-            #if nice(self.box[0], self.box[1], 1, -1, -1) == '1':
-            #    dtos[self.box[0] - 1, self.box[1]-1] = int(str(self.name) + '2')
-            #    dotes[self.box[0] - 1, self.box[1]-1] = Dot(dtos[self.box[0] - 1, self.box[1]-1])
-            #if nice(self.box[0], self.box[1], 1, -1, 1) == '1':
-            #    dtos[self.box[0] - 1, self.box[1]+1] = int(str(self.name) + '3')
-            #    dotes[self.box[0] - 1, self.box[1]+1] = Dot(dtos[self.box[0] - 1, self.box[1]+1])
-            #endregion
-
+          
 
 
         
@@ -623,6 +582,7 @@ def main():
     prev_box = None 
     cur_box = None
     dotes[7,7] = 0
+    turn = '1'
 
     # Main Loop
     going = True
@@ -661,6 +621,21 @@ def main():
                         boards[int(ind1)][int(ind2)] = 0
                         pieces[int(ind1)][int(ind2)] = 0
                         pieces[cur_box[0],cur_box[1]].box = int(cur_box[0]),int(cur_box[1])
+                        turn = turn_dict[turn]
+                    elif str(pieces[ind1][ind2].name)[1] == '3': # Walrus
+                        n = len(list(set(i for j in boards for i in j)))
+                        pieces[ind1][ind2].close_moves()
+                        boards[cur_box[0]][cur_box[1]] = int(piece_move)
+                        pieces[cur_box[0]][cur_box[1]] = pieces[int(ind1),int(ind2)]
+                        boards[int(ind1)][int(ind2)] = 0
+                        pieces[int(ind1)][int(ind2)] = 0
+                        pieces[cur_box[0],cur_box[1]].box = int(cur_box[0]),int(cur_box[1])
+
+                        if (abs(ind1-cur_box[0]) == 2) and (len(list(set(i for j in boards for i in j))) == n):
+                            turn = turn
+                        else: 
+                            turn = turn_dict[turn]
+                        
                     else:
                         pieces[ind1][ind2].close_moves()
                         boards[cur_box[0]][cur_box[1]] = int(piece_move)
@@ -668,14 +643,15 @@ def main():
                         boards[int(ind1)][int(ind2)] = 0
                         pieces[int(ind1)][int(ind2)] = 0
                         pieces[cur_box[0],cur_box[1]].box = int(cur_box[0]),int(cur_box[1])
+                        turn = turn_dict[turn]
                     
                 elif str(pieces[cur_box[0]][cur_box[1]].name)[1] == '1' or '2': # If is a pawn, make the moves - later will be all pieces
                     #open dots
+                    if (nice(cur_box[0], cur_box[1], 1) == turn):
+                        if (prev_box != None) and (prev_box != cur_box) and (type(pieces[prev_box[0]][prev_box[1]]) != int): 
+                            pieces[prev_box[0]][prev_box[1]].close_moves() # closes movement
 
-                    if (prev_box != None) and (prev_box != cur_box) and (type(pieces[prev_box[0]][prev_box[1]]) != int): 
-                        pieces[prev_box[0]][prev_box[1]].close_moves() # closes movement
-
-                    pieces[cur_box[0]][cur_box[1]].create_moves() # Uses method to make moves
+                        pieces[cur_box[0]][cur_box[1]].create_moves() # Uses method to make moves
 
                     
             
