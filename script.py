@@ -31,6 +31,20 @@ dot_spaces = {
     7 : 547.5
 }
 
+naming_nums = {
+    (-1, -1) : 11,
+    (-1, 0) : 12,
+    (-1, 1) : 13,
+    (0, -1) : 14,
+    (0, 0) : 15,
+    (0, 1) : 16,
+    (1, -1) : 17,
+    (1, 0) : 18,
+    (1, 1) : 19,
+}
+
+
+
 # ranges that connect a position from the mouse to a box on the board
 cursor_range = [(0,73), (73, 148), (148, 223), (223, 298), (298, 373), (373,448), (448, 523), (523, 598)]
 
@@ -116,19 +130,19 @@ def make_board(orig):
             # If it has a 3 for the second digit, it is a Birdie/knight
             elif str(piece)[1] == str(3):
                 #bong.append(Knight)
-                bong.append(3)
+                bong.append(Rat(piece))
             # If it has a 4 for the second digit, it is a bishop 
             elif str(piece)[1] == str(4):
                 #bong.append(Bishop)
-                bong.append(4)
+                bong.append(Snake(piece))
             # If it has a 5 for the second digit, it is a King
             elif str(piece)[1] == str(5):
                 #bong.append(King)
-                bong.append(5)
+                bong.append(King(piece))
             # If it has a 6 for the second digit, it is a Queen
             elif str(piece)[1] == str(6):
                 #bong.append(Queen)
-                bong.append(6)
+                bong.append(Queen(piece))
             else:
                 bong.append(0)
                 print(str(piece)[1])
@@ -154,6 +168,68 @@ def check_range(num):
         if num in range(rng[0],rng[1]):
             return ind
 
+def nice(x : int, y : int, typee, ofset_x=0, ofset_y=0, inp=None):
+    '''
+    Parameters:
+    ----------
+    x : int
+        X coordinate of the piece.
+    y : int
+        Y coordinate of the piece.
+    typee : int
+        Type of conversion/information request. 
+
+        1: Return color of piece (not racist)
+        2: Change dtos - Need inp then Change dotes
+        4: Change boards - Need inp
+        5: Change Piece
+    ofset_x : int
+        How far the piece that you want the information of is from the piece
+        Optional, default is 0 - checking the piece specified in x,y
+    ofset_y : int
+        How far the piece that you want the information of is from the piece
+        Optional, default is 0 - checking the piece specified in x,y
+
+    Output:
+    ------
+    Type 1:
+        Str : color of piece (1 or 2)
+    Type 2: 
+        Just changes variables
+    
+    '''
+    if (x + ofset_x not in range(0,8)) or (y + ofset_y not in range(0,8)):
+        return None
+    
+
+    if typee==1:
+        return str(boards[x+ofset_x, y + ofset_y]).lstrip('[')[0]
+    elif typee==2:
+        dtos[x+ofset_x, y+ofset_y] = inp
+        if int(dtos[x+ofset_x, y+ofset_y]) != 0:
+            dotes[x+ofset_x, y+ofset_y] = Dot(dtos[x+ofset_x, y+ofset_y])
+            return
+        else:
+            dotes[x+ofset_x, y+ofset_y] = 0
+            return
+
+    elif typee==3:
+        return int(str(boards[x+ofset_x, y + ofset_y]).lstrip('[')[1])
+        
+    #elif typee==3:
+    #    if dtos[x+ofset_x, y+ofset_y] != 0:
+    #        dotes[x+ofset_x, y+ofset_y] = Dot(dtos[x+ofset_x, y+ofset_y])
+    #    else:
+    #        dotes[x+ofset_x, y+ofset_y] = 0
+    #    return
+
+
+
+
+
+#def check_square(x,y,opt):
+
+
 
 # Example class
 
@@ -167,9 +243,6 @@ class Dot(pg.sprite.Sprite):
         self.rect = (30,30)  
         self.name = name
 
-    def my_fav(self):
-        self.rect = (30,30)
-
 
 dotes = make_board(dtos)
 
@@ -180,55 +253,94 @@ class Fishie(pg.sprite.Sprite):
         self.name = name
         self.box = np.where(boards == int(self.name))
         pg.sprite.Sprite.__init__(self)  # call Sprite initializer
-        self.image, self.rect = pg.transform.scale(pg.image.load('data/fishie.png'), (50,50)), (50,50)
+        if nice(self.box[0],self.box[1],1) == '1':
+            self.image = pg.transform.scale(pg.image.load('data/Goldfish_white.png'), (50,50))
+        else: 
+            self.image = pg.transform.scale(pg.image.load('data/Goldfish_black.png'), (50,50))
+        self.rect = (50,50)
 
     # Creates the dots of possible moves for a pawn
-    def create_moves(self, price):
+    def create_moves(self):
         # determines which color it is (for top or bottom)
         if str(self.name)[0] == '1': #White
             # Takes the box that is one below the box of the piece and places a number
             # Which is 4 digits, and has the identifier appended to the end of the piece name
-            dtos[self.box[0] + 1 ,self.box[1]] = int(str(self.name) + '0')
-            print(dtos[self.box[0] + 1 ,self.box[1]])
-            dotes[self.box[0] + 1, self.box[1]] = Dot(dtos[self.box[0] + 1 ,self.box[1]])
+            #dtos[self.box[0] + 1 ,self.box[1]] = int(str(self.name) + '0')
+            nice(self.box[0], self.box[1], 2, 1, 0, int(str(self.name) + '00'))
+            #dotes[self.box[0] + 1, self.box[1]] = Dot(dtos[self.box[0] + 1 ,self.box[1]])
+            #nice(self.box[0], self.box[1], 3, 1, 0)
             # If it is on the 2 or 7th rank then it can move two spaces so it adds that box
             if self.box[0] == 1:
-                dtos[self.box[0] + 2,self.box[1]] = int(str(self.name) + '1')
-                dotes[self.box[0] + 2, self.box[1]] = Dot(dtos[self.box[0] + 2,self.box[1]])
+                nice(self.box[0], self.box[1], 2, 2, 0, int(str(self.name) + '01'))
+                #nice(self.box[0], self.box[1], 3, 2, 0)
             
-            if str(boards[self.box[0]+1, self.box[1]-1])[0] == '2':
-                dtos[self.box[0] + 1, self.box[1]-1] = int(str(self.name) + '2')
-                dotes[self.box[0] + 1, self.box[1]-1] = Dot(dtos[self.box[0] + 1, self.box[1]-1])
-            if str(boards[self.box[0]+1, self.box[1]+1])[0] == '2':
-                dtos[self.box[0] + 1, self.box[1]+1] = int(str(self.name) + '3')
-                dotes[self.box[0] + 1, self.box[1]+1] = Dot(dtos[self.box[0] + 1, self.box[1]+1])
+            if nice(self.box[0], self.box[1], 1, 1, -1) == '2':
+                nice(self.box[0], self.box[1], 2, 1, -1, int(str(self.name) + '02'))
+                #nice(self.box[0], self.box[1], 3, 1, -1)
+            if nice(self.box[0], self.box[1], 1, 1, 1) == '2':
+                nice(self.box[0], self.box[1], 2, 1, 1, int(str(self.name) + '03'))
+                #nice(self.box[0], self.box[1], 3, 1, 1)
             
-            print(boards)
+            #region
+            # DEP
+            #if self.box[0] == 1:
+            #    dtos[self.box[0] + 2,self.box[1]] = int(str(self.name) + '1')
+            #    dotes[self.box[0] + 2, self.box[1]] = Dot(dtos[self.box[0] + 2,self.box[1]])
+            #
+            #if nice(self.box[0], self.box[1], 1, 1, -1) == '2':
+            #    
+            #    dtos[self.box[0] + 1, self.box[1]-1] = int(str(self.name) + '2')
+            #    dotes[self.box[0] + 1, self.box[1]-1] = Dot(dtos[self.box[0] + 1, self.box[1]-1])
+            #if nice(self.box[0], self.box[1], 1, 1, 1) == '2':
+            #    dtos[self.box[0] + 1, self.box[1]+1] = int(str(self.name) + '3')
+            #    dotes[self.box[0] + 1, self.box[1]+1] = Dot(dtos[self.box[0] + 1, self.box[1]+1])
+            #endregion
+
         elif str(self.name)[0] == '2': # Black
             # Takes the box that is one above the box of the piece and places a number
             # Which is 4 digits, and has the identifier appended to the end of the piece name
-            dtos[self.box[0] - 1,self.box[1]] = int(str(self.name) + '0')
-            dotes[self.box[0] - 1, self.box[1]] = Dot(dtos[self.box[0] - 1,self.box[1]])
+
+            #dtos[self.box[0] - 1,self.box[1]] = int(str(self.name) + '0')
+            #dotes[self.box[0] - 1, self.box[1]] = Dot(dtos[self.box[0] - 1,self.box[1]])
+
+            nice(self.box[0], self.box[1], 2, -1, 0, int(str(self.name) + '00'))
+            #nice(self.box[0], self.box[1], 3, -1, 0)
             # If it is on the 2 or 7th rank then it can move two spaces so it adds that box
             if self.box[0] == 6:
-                dtos[self.box[0] - 2,self.box[1]] = int(str(self.name) + '1')
-                dotes[self.box[0] - 2, self.box[1]] = Dot(dtos[self.box[0] - 2,self.box[1]])
+                nice(self.box[0], self.box[1], 2, -2, 0, int(str(self.name) + '01'))
+                #nice(self.box[0], self.box[1], 3, -2, 0)
             
-            if str(boards[self.box[0]-1, self.box[1]-1])[0] == '1':
-                dtos[self.box[0] - 1, self.box[1]-1] = int(str(self.name) + '2')
-                dotes[self.box[0] - 1, self.box[1]-1] = Dot(dtos[self.box[0] - 1, self.box[1]-1])
-            if str(boards[self.box[0]-1, self.box[1]+1])[0] == '1':
-                dtos[self.box[0] - 1, self.box[1]+1] = int(str(self.name) + '3')
-                dotes[self.box[0] - 1, self.box[1]+1] = Dot(dtos[self.box[0] - 1, self.box[1]+1])
-            print(boards)
-        else: 
-            print(boards)
+            if nice(self.box[0], self.box[1], 1, -1, -1) == '1':
+                nice(self.box[0], self.box[1], 2, -1, -1, int(str(self.name) + '02'))
+                #nice(self.box[0], self.box[1], 3, -1, -1)
+            if nice(self.box[0], self.box[1], 1, -1, 1) == '1':
+                nice(self.box[0], self.box[1], 2, -1, 1, int(str(self.name) + '03'))
+                #nice(self.box[0], self.box[1], 3, -1, 1)
+
+            #DEP 
+            #region
+            #dtos[self.box[0] - 1,self.box[1]] = int(str(self.name) + '0')
+            #dotes[self.box[0] - 1, self.box[1]] = Dot(dtos[self.box[0] - 1,self.box[1]])
+            ## If it is on the 2 or 7th rank then it can move two spaces so it adds that box
+            #if self.box[0] == 6:
+            #    dtos[self.box[0] - 2,self.box[1]] = int(str(self.name) + '1')
+            #    dotes[self.box[0] - 2, self.box[1]] = Dot(dtos[self.box[0] - 2,self.box[1]])
+            #
+            #if nice(self.box[0], self.box[1], 1, -1, -1) == '1':
+            #    dtos[self.box[0] - 1, self.box[1]-1] = int(str(self.name) + '2')
+            #    dotes[self.box[0] - 1, self.box[1]-1] = Dot(dtos[self.box[0] - 1, self.box[1]-1])
+            #if nice(self.box[0], self.box[1], 1, -1, 1) == '1':
+            #    dtos[self.box[0] - 1, self.box[1]+1] = int(str(self.name) + '3')
+            #    dotes[self.box[0] - 1, self.box[1]+1] = Dot(dtos[self.box[0] - 1, self.box[1]+1])
+            #endregion
+
+
 
         
         
     
     # Removes the moves created
-    def close_moves(self, price):
+    def close_moves(self):
         # determines which color it is (for top or bottom)
         if str(self.name)[0] == '1': #White
             # Takes the box that is one below the box of the piece and places a number
@@ -242,7 +354,14 @@ class Fishie(pg.sprite.Sprite):
             if (self.box[0] == 1):
                 dtos[self.box[0] + 2,self.box[1]] = 0
                 dotes[self.box[0] + 2, self.box[1]] = 0
-            print(boards)
+            
+            nice(self.box[0], self.box[1], 2, 1, -1, 0)
+            #nice(self.box[0], self.box[1], 3, 1, -1)
+
+            nice(self.box[0], self.box[1], 2, 1, 1, 0)
+            #nice(self.box[0], self.box[1], 3, 1, 1)
+            
+
         elif str(self.name)[0] == '2': # Black
             # Takes the box that is one above the box of the piece and places a number
             # Which is 4 digits, and has the identifier appended to the end of the piece name
@@ -256,18 +375,222 @@ class Fishie(pg.sprite.Sprite):
             if (self.box[0] == 6):
                 dtos[self.box[0] - 2,self.box[1]] = 0
                 dotes[self.box[0] - 2, self.box[1]] = 0
-            print(boards)
+            
+            nice(self.box[0], self.box[1], 2, -1, -1, 0)
+            #nice(self.box[0], self.box[1], 3, -1, -1)
+            nice(self.box[0], self.box[1], 2, -1, 1, 0)
+            #nice(self.box[0], self.box[1], 3, -1, 1)
 
 
 class Groundhog(pg.sprite.Sprite):
     def __init__(self, name):
         self.name = name
+        self.box = np.where(boards == int(self.name))
         pg.sprite.Sprite.__init__(self)
-        self.image, self.rect = pg.transform.scale(pg.image.load('data/groundhog.png'), (50,50)), (50,50)
+        if nice(self.box[0],self.box[1],1) == '1':
+            self.image = pg.transform.scale(pg.image.load('data/white_walrus.png'), (50,50))
+        else: 
+            self.image = pg.transform.scale(pg.image.load('data/black_walrus.png'), (50,50))
+        self.rect = (50,50)
+
+    def create_moves(self):
+        clr = nice(self.box[0], self.box[1], 1)
+        print(clr)
+        if (nice(self.box[0], self.box[1], 1, 1, 0) != clr) and (nice(self.box[0], self.box[1], 1, 2, 0) != clr):
+            nice(self.box[0], self.box[1], 2, 2, 0, int(str(self.name) + '00'))
+    
+        if (nice(self.box[0], self.box[1], 1, -1, 0) != clr) and (nice(self.box[0], self.box[1], 1, -2, 0) != clr):
+            nice(self.box[0], self.box[1], 2, -2, 0, int(str(self.name) + '01'))
+
+        if (nice(self.box[0], self.box[1], 1, 0, 1) != clr) and (nice(self.box[0], self.box[1], 1, 0, 2) != clr):
+            nice(self.box[0], self.box[1], 2, 0, 2, int(str(self.name) + '02'))
+
+        if (nice(self.box[0], self.box[1], 1, 0, -1) != clr) and (nice(self.box[0], self.box[1], 1, 0, -2) != clr):
+            nice(self.box[0], self.box[1], 2, 0, -2, int(str(self.name) + '03'))
 
         
+        
+
+        for i in range(-1, 2):
+            for j in range(-1,2):
+                if nice(self.box[0], self.box[1], 1, i, j) == '0':
+                    nice(self.box[0], self.box[1], 2, i, j, int(str(self.name) + str(naming_nums[(i,j)])))
+
+        print(dtos)
 
 
+    # Removes the moves created
+    def close_moves(self):
+        nice(self.box[0], self.box[1], 2, 2, 0, 0)
+        nice(self.box[0], self.box[1], 2, -2, 0, 0)
+        nice(self.box[0], self.box[1], 2, 0, 2,0)
+        nice(self.box[0], self.box[1], 2, 0, -2, 0)
+
+        for i in range(-1, 2):
+            for j in range(-1,2):
+                nice(self.box[0], self.box[1], 2, i, j, 0)        
+
+        
+class Queen(pg.sprite.Sprite):
+    def __init__(self, name):
+        self.name = name
+        self.box = np.where(boards == int(self.name))
+        pg.sprite.Sprite.__init__(self)
+        if nice(self.box[0],self.box[1],1) == '1':
+            self.image = pg.transform.scale(pg.image.load('data/white_queen.png'), (50,50))
+        else: 
+            self.image = pg.transform.scale(pg.image.load('data/black_queen.png'), (50,50))
+        self.rect = (50,50)
+
+    def create_moves(self):
+        clr = nice(self.box[0], self.box[1], 1)
+        print(clr)
+
+        stop = None
+        
+
+        for i in range(-1, 2):
+            for j in range(-1,2):
+                for k in range(1,8):
+                    if nice(self.box[0], self.box[1], 1, i * k, j * k) != '0':
+                        if nice(self.box[0], self.box[1], 1, i * k, j * k) != clr:
+                            stop = k + 1
+                        else:
+                            stop = k
+                        break
+                for l in range(1, stop):
+                    nice(self.box[0], self.box[1], 2, i * l, j * l, int(str(self.name) + str(naming_nums[(i,j)] - 10)  + str(l)))
+
+
+
+        print(dtos)
+
+
+    # Removes the moves created
+    def close_moves(self):
+        
+        for i in range(-1, 2):
+            for j in range(-1,2):
+                for k in range(1,9):
+                    nice(self.box[0], self.box[1], 2, i*k, j*k, 0)
+        
+
+class King(pg.sprite.Sprite):
+    def __init__(self, name):
+        self.name = name
+        self.box = np.where(boards == int(self.name))
+        pg.sprite.Sprite.__init__(self)
+        if nice(self.box[0],self.box[1],1) == '1':
+            self.image = pg.transform.scale(pg.image.load('data/white_king.png'), (50,50))
+        else: 
+            self.image = pg.transform.scale(pg.image.load('data/black_king.png'), (50,50))
+        self.rect = (50,50)
+
+    def create_moves(self):
+        clr = nice(self.box[0], self.box[1], 1)
+        
+
+        for i in range(-1, 2):
+            for j in range(-1,2):
+                if nice(self.box[0], self.box[1], 1, i, j) != clr:
+                    nice(self.box[0], self.box[1], 2, i, j, int(str(self.name) + str(naming_nums[(i,j)])))
+
+
+
+
+
+
+    # Removes the moves created
+    def close_moves(self):
+        
+        for i in range(-1, 2):
+            for j in range(-1,2):
+                nice(self.box[0], self.box[1], 2, i, j, 0)
+        
+
+class Rat(pg.sprite.Sprite):
+    def __init__(self, name):
+        self.name = name
+        self.box = np.where(boards == int(self.name))
+        pg.sprite.Sprite.__init__(self)
+        if nice(self.box[0],self.box[1],1) == '1':
+            self.image = pg.transform.scale(pg.image.load('data/white_rat.png'), (50,50))
+        else: 
+            self.image = pg.transform.scale(pg.image.load('data/black_rat.png'), (50,50))
+        self.rect = (50,50)
+
+    def create_moves(self):
+        clr = nice(self.box[0], self.box[1], 1)
+        
+        for i in range(-1, 2):
+            for j in range(-1,2):
+                if (nice(self.box[0], self.box[1], 1, i, j) != '0') and (nice(self.box[0], self.box[1], 1, i * 2, j* 2) != clr):
+                    nice(self.box[0], self.box[1], 2, i*2, j * 2, int(str(self.name) + str(naming_nums[(i,j)] - 10) + '0'))
+        
+        
+
+        for i in range(-1, 2):
+            for j in range(-1,2):
+                if nice(self.box[0], self.box[1], 1, i, j) == '0':
+                    nice(self.box[0], self.box[1], 2, i, j, int(str(self.name) + str(naming_nums[(i,j)])))
+
+        print(dtos)
+
+
+    # Removes the moves created
+    def close_moves(self):
+        for i in range(-1, 2):
+            for j in range(-1,2):   
+                nice(self.box[0], self.box[1], 2, i*2, j * 2, 0)
+        
+        
+
+        for i in range(-1, 2):
+            for j in range(-1,2):
+                nice(self.box[0], self.box[1], 2, i, j, 0)    
+
+class Snake(pg.sprite.Sprite):
+    def __init__(self, name):
+        self.name = name
+        self.box = np.where(boards == int(self.name))
+        pg.sprite.Sprite.__init__(self)
+        if nice(self.box[0],self.box[1],1) == '1':
+            self.image = pg.transform.scale(pg.image.load('data/white_snake.png'), (50,50))
+        else: 
+            self.image = pg.transform.scale(pg.image.load('data/black_snake.png'), (50,50))
+        self.rect = (50,50)
+
+    def create_moves(self):
+        clr = nice(self.box[0], self.box[1], 1)
+        print(clr)
+
+        stop = None
+        
+
+        for i in range(-1, 2, 2):
+            for j in range(-1,2, 2):
+                for k in range(1,9):
+                    if nice(self.box[0], self.box[1], 1, i * k, j * k) != '0':
+                        if nice(self.box[0], self.box[1], 1, i * k, j * k) != clr:
+                            stop = k + 1
+                        else:
+                            stop = k
+                        break
+                for l in range(1, stop):
+                    nice(self.box[0], self.box[1], 2, i * l, j * l, int(str(self.name) + str(naming_nums[(i,j)] - 10) + str(l)))
+
+
+
+        print(dtos)
+
+
+    # Removes the moves created
+    def close_moves(self):
+        
+        for i in range(-1, 2, 2):
+            for j in range(-1,2, 2):
+                for k in range(1,8):
+                    nice(self.box[0], self.box[1], 2, i*k, j*k, 0)
 
 
 
@@ -299,6 +622,8 @@ def main():
     clock = pg.time.Clock()
     prev_box = None 
     cur_box = None
+    dotes[7,7] = 0
+
     # Main Loop
     going = True
     while going:
@@ -314,30 +639,50 @@ def main():
         if pg.mouse.get_pressed(3)[0] == True: # If the main mouse button pressed
             mouse_pos = pg.mouse.get_pos() # Gets mouse coordinate
             cur_box = check_range(mouse_pos[1]), check_range(mouse_pos[0]) # Inputs the box which the mouse is in
-            if type(pieces[cur_box[0]][cur_box[1]]) != int: # If it is a 0, do nothing
-                if pieces[cur_box[0]][cur_box[1]].name >= 1000:
-                    piece_move = str(int(pieces[cur_box[0]][cur_box[1]].name))[:-1]
+            if (type(pieces[cur_box[0]][cur_box[1]]) != int) or (type(dotes[cur_box[0]][cur_box[1]]) != int): # If it is a 0, do nothing
+                
+                if (type(dotes[cur_box[0]][cur_box[1]]) != int) and (dotes[cur_box[0]][cur_box[1]].name >= 10000) and (prev_box != cur_box):
+                    piece_move = str(int(dotes[cur_box[0]][cur_box[1]].name))[:-2]
                     ind1, ind2 = np.where(boards == int(piece_move))
-                    print(ind1,ind2)
-                    print(piece_move)
-                    print(int(ind1), int(ind2))
                     ind1 = int(ind1); ind2 = int(ind2)
-                    pieces[ind1][ind2].close_moves(pieces)
-                    print(boards)
-                    boards[cur_box[0]][cur_box[1]] = int(piece_move)
-                    print(boards)
-                    pieces[cur_box[0]][cur_box[1]] = pieces[int(ind1)][int(ind2)]
-                    boards[int(ind1)][int(ind2)] = 0
-                    print(boards)
-                    pieces[int(ind1)][int(ind2)] = 0
-                    pieces[cur_box[0]][cur_box[1]].box = int(cur_box[0]),int(cur_box[1])
+                    if str(pieces[ind1][ind2].name)[1] == '2': # Walrus
+                        pieces[ind1][ind2].close_moves()
+                        if abs(ind1-cur_box[0]) == 2:
+                            spt = int(np.average([ind1,cur_box[0]]))
+                            boards[spt][int(ind2)] = 0
+                            pieces[spt][int(ind2)] = 0
+                        elif abs(ind2-cur_box[1]) == 2:
+                            spt = int(np.average([ind2,cur_box[1]]))
+                            boards[int(ind1)][spt] = 0
+                            pieces[int(ind1)][spt] = 0
+
+                        boards[cur_box[0]][cur_box[1]] = int(piece_move)
+                        pieces[cur_box[0]][cur_box[1]] = pieces[int(ind1),int(ind2)]
+                        boards[int(ind1)][int(ind2)] = 0
+                        pieces[int(ind1)][int(ind2)] = 0
+                        pieces[cur_box[0],cur_box[1]].box = int(cur_box[0]),int(cur_box[1])
+                    else:
+                        pieces[ind1][ind2].close_moves()
+                        boards[cur_box[0]][cur_box[1]] = int(piece_move)
+                        pieces[cur_box[0]][cur_box[1]] = pieces[int(ind1),int(ind2)]
+                        boards[int(ind1)][int(ind2)] = 0
+                        pieces[int(ind1)][int(ind2)] = 0
+                        pieces[cur_box[0],cur_box[1]].box = int(cur_box[0]),int(cur_box[1])
                     
-                elif str(pieces[cur_box[0]][cur_box[1]].name)[1] == '1': # If is a pawn, make the moves - later will be all pieces
+                elif str(pieces[cur_box[0]][cur_box[1]].name)[1] == '1' or '2': # If is a pawn, make the moves - later will be all pieces
                     #open dots
-                    pieces[cur_box[0]][cur_box[1]].create_moves(pieces) # Uses method to make moves
+
+                    if (prev_box != None) and (prev_box != cur_box) and (type(pieces[prev_box[0]][prev_box[1]]) != int): 
+                        pieces[prev_box[0]][prev_box[1]].close_moves() # closes movement
+
+                    pieces[cur_box[0]][cur_box[1]].create_moves() # Uses method to make moves
+
+                    
             
-                if (prev_box != None) and (prev_box != cur_box) and (type(pieces[prev_box[0]][prev_box[1]]) != int): # if clicked (nested if) and the previous box has been set and the previous box and current box are different
-                    pieces[prev_box[0]][prev_box[1]].close_moves(pieces) # closes movement
+                #if (prev_box != None) and (prev_box != cur_box) and (type(pieces[prev_box[0]][prev_box[1]]) != int): # if clicked (nested if) and the previous box has been set and the previous box and current box are different
+                #    pieces[prev_box[0]][prev_box[1]].close_moves() # closes movement
+
+            
             
           
 
