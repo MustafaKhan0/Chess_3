@@ -1,3 +1,4 @@
+from socket import if_indextoname
 import pygame as pg  # imports pyagme library with the shorthand name of pg
 import os  # imports os, a python native libarary which deals with files and paths
 import numpy as np # imports numpy, a python library with math, arrays, and a lot of stuff. For this, mostly arrays
@@ -56,11 +57,11 @@ cursor_range = [(0,73), (73, 148), (148, 223), (223, 298), (298, 373), (373,448)
 # Digit 3 : 1 = White, 2 = Black
 # Makes the board - white at the top, black at the bottom of the matrix
 boards = np.array([
-    [120, 130, 140, 150, 160, 141, 131, 121],
+    [120, 130, 140, 150, 168, 141, 131, 121],
     [110, 111, 112, 113, 114, 115, 116, 117]
 ])
 boards = np.append(boards, np.zeros((4, 8)), 0)
-boards = np.append(boards, np.array([[210, 211, 212, 213, 214, 215, 216, 217],[220, 230, 240, 250, 260, 241, 231, 221]]), 0)
+boards = np.append(boards, np.array([[210, 211, 212, 213, 214, 215, 216, 217],[220, 230, 240, 250, 268, 241, 231, 221]]), 0)
 boards = boards.astype(int)
 
 turn_dict = {
@@ -150,7 +151,6 @@ def make_board(orig):
                 bong.append(Queen(piece))
             else:
                 bong.append(0)
-                print(str(piece)[1])
     
     return np.reshape(bong, (8,8))
 
@@ -220,6 +220,8 @@ def nice(x : int, y : int, typee, ofset_x=0, ofset_y=0, inp=None):
 
     elif typee==3:
         return int(str(boards[x+ofset_x, y + ofset_y]).lstrip('[')[1])
+
+        
         
     #elif typee==3:
     #    if dtos[x+ofset_x, y+ofset_y] != 0:
@@ -250,7 +252,7 @@ class Dot(pg.sprite.Sprite):
 
 
 dotes = make_board(dtos)
-
+pieces = []
 
 class Fishie(pg.sprite.Sprite):
     # ttvtommyinit
@@ -270,9 +272,8 @@ class Fishie(pg.sprite.Sprite):
         if str(self.name)[0] == '1': #White
             if nice(self.box[0], self.box[1], 1, 1, 0) == '0':
                 nice(self.box[0], self.box[1], 2, 1, 0, int(str(self.name) + '00'))
-
-            if self.box[0] == 1:
-                nice(self.box[0], self.box[1], 2, 2, 0, int(str(self.name) + '01'))
+                if self.box[0] == 1:
+                    nice(self.box[0], self.box[1], 2, 2, 0, int(str(self.name) + '01'))
             
             if nice(self.box[0], self.box[1], 1, 1, -1) == '2':
                 nice(self.box[0], self.box[1], 2, 1, -1, int(str(self.name) + '02'))
@@ -305,8 +306,8 @@ class Fishie(pg.sprite.Sprite):
             # Takes the box that is one below the box of the piece and places a number
             # Which is 4 digits, and has the identifier appended to the end of the piece name
             if self.box[0] == 7:
-                # Add logic for turning into fishie queen
-                print('im a fishie queen now') # Placeholder code, delete when actually implement it
+                boards[self.box[self.box[0], self.box[1]]] = int('16' + str(self.name)[-1])
+                pieces[self.box[self.box[0], self.box[1]]] = Queen(str(boards[self.box[self.box[0], self.box[1]]]))
             dtos[self.box[0] + 1,self.box[1]] = 0
             dotes[self.box[0] + 1, self.box[1]] = 0
             # If it is on the 2nd or 7th rank then it can move two spaces so it adds that box
@@ -325,8 +326,8 @@ class Fishie(pg.sprite.Sprite):
             # Takes the box that is one above the box of the piece and places a number
             # Which is 4 digits, and has the identifier appended to the end of the piece name
             if self.box[0] == 0:
-                # Add logic for turning into fishie queen
-                print('im a fishie queen now') # Placeholder code, delete when actually implement it
+                boards[self.box[self.box[0], self.box[1]]] = int('26' + str(self.name)[-1])
+                pieces[self.box[self.box[0], self.box[1]]] = Queen(str(boards[self.box[self.box[0], self.box[1]]]))
             
             dtos[self.box[0] - 1,self.box[1]] = 0
             dotes[self.box[0] - 1, self.box[1]] = 0
@@ -354,7 +355,6 @@ class Groundhog(pg.sprite.Sprite):
 
     def create_moves(self):
         clr = nice(self.box[0], self.box[1], 1)
-        print(clr)
         if (nice(self.box[0], self.box[1], 1, 1, 0) != clr) and (nice(self.box[0], self.box[1], 1, 2, 0) != clr):
             nice(self.box[0], self.box[1], 2, 2, 0, int(str(self.name) + '00'))
     
@@ -375,7 +375,6 @@ class Groundhog(pg.sprite.Sprite):
                 if nice(self.box[0], self.box[1], 1, i, j) == '0':
                     nice(self.box[0], self.box[1], 2, i, j, int(str(self.name) + str(naming_nums[(i,j)])))
 
-        print(dtos)
 
 
     # Removes the moves created
@@ -403,7 +402,6 @@ class Queen(pg.sprite.Sprite):
 
     def create_moves(self):
         clr = nice(self.box[0], self.box[1], 1)
-        print(clr)
 
         stop = None
         
@@ -421,8 +419,6 @@ class Queen(pg.sprite.Sprite):
                     nice(self.box[0], self.box[1], 2, i * l, j * l, int(str(self.name) + str(naming_nums[(i,j)] - 10)  + str(l)))
 
 
-
-        print(dtos)
 
 
     # Removes the moves created
@@ -493,7 +489,6 @@ class Rat(pg.sprite.Sprite):
                 if nice(self.box[0], self.box[1], 1, i, j) == '0':
                     nice(self.box[0], self.box[1], 2, i, j, int(str(self.name) + str(naming_nums[(i,j)])))
 
-        print(dtos)
 
 
     # Removes the moves created
@@ -521,7 +516,6 @@ class Snake(pg.sprite.Sprite):
 
     def create_moves(self):
         clr = nice(self.box[0], self.box[1], 1)
-        print(clr)
 
         stop = None
         
@@ -540,7 +534,6 @@ class Snake(pg.sprite.Sprite):
 
 
 
-        print(dtos)
 
 
     # Removes the moves created
@@ -552,14 +545,14 @@ class Snake(pg.sprite.Sprite):
                     nice(self.box[0], self.box[1], 2, i*k, j*k, 0)
 
 
-
+pieces = make_board(boards) # Turns numbers into object instances
 
 
 def main():
     """this function is called when the program starts.
     it initializes everything it needs, then runs in
     a loop until the function returns."""
-    pieces = make_board(boards) # Turns numbers into object instances
+    
     
     print(pieces)
     # Initialize Everything
@@ -595,10 +588,19 @@ def main():
                 going = False
             elif event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE:
                 going = False
+            if event.type == pg.KEYDOWN and event.key == pg.K_e:
+                rt = True
+                turn = turn_dict[turn]
+        
+        if (list(np.where(boards == 150)[0]) == []) or  (list(np.where(boards == 250)[0]) == []):
+            going = False
+
         
         if pg.mouse.get_pressed(3)[0] == True: # If the main mouse button pressed
             mouse_pos = pg.mouse.get_pos() # Gets mouse coordinate
             cur_box = check_range(mouse_pos[1]), check_range(mouse_pos[0]) # Inputs the box which the mouse is in
+            # Moves piece
+            
             if (type(pieces[cur_box[0]][cur_box[1]]) != int) or (type(dotes[cur_box[0]][cur_box[1]]) != int): # If it is a 0, do nothing
                 
                 if (type(dotes[cur_box[0]][cur_box[1]]) != int) and (dotes[cur_box[0]][cur_box[1]].name >= 10000) and (prev_box != cur_box):
@@ -622,7 +624,7 @@ def main():
                         pieces[int(ind1)][int(ind2)] = 0
                         pieces[cur_box[0],cur_box[1]].box = int(cur_box[0]),int(cur_box[1])
                         turn = turn_dict[turn]
-                    elif str(pieces[ind1][ind2].name)[1] == '3': # Walrus
+                    elif str(pieces[ind1][ind2].name)[1] == '3':  # Rat
                         n = len(list(set(i for j in boards for i in j)))
                         pieces[ind1][ind2].close_moves()
                         boards[cur_box[0]][cur_box[1]] = int(piece_move)
@@ -630,8 +632,9 @@ def main():
                         boards[int(ind1)][int(ind2)] = 0
                         pieces[int(ind1)][int(ind2)] = 0
                         pieces[cur_box[0],cur_box[1]].box = int(cur_box[0]),int(cur_box[1])
-
-                        if (abs(ind1-cur_box[0]) == 2) and (len(list(set(i for j in boards for i in j))) == n):
+                        if rt == True:
+                            turn = turn_dict[turn]
+                        elif (abs(ind1-cur_box[0]) == 2) and (len(list(set(i for j in boards for i in j))) == n):
                             turn = turn
                         else: 
                             turn = turn_dict[turn]
@@ -644,7 +647,9 @@ def main():
                         pieces[int(ind1)][int(ind2)] = 0
                         pieces[cur_box[0],cur_box[1]].box = int(cur_box[0]),int(cur_box[1])
                         turn = turn_dict[turn]
-                    
+                    print(boards)
+                    print(np.where(boards == 150), np.where(boards == 260))
+                # Creating moves
                 elif str(pieces[cur_box[0]][cur_box[1]].name)[1] == '1' or '2': # If is a pawn, make the moves - later will be all pieces
                     #open dots
                     if (nice(cur_box[0], cur_box[1], 1) == turn):
@@ -652,6 +657,7 @@ def main():
                             pieces[prev_box[0]][prev_box[1]].close_moves() # closes movement
 
                         pieces[cur_box[0]][cur_box[1]].create_moves() # Uses method to make moves
+                    print(boards)
 
                     
             
@@ -671,6 +677,9 @@ def main():
         pg.display.flip()
 
         prev_box = cur_box
+        rt = False
+
+    
     pg.quit()
 
 
