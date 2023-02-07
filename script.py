@@ -1,7 +1,6 @@
-from socket import if_indextoname
 import pygame as pg  # imports pyagme library with the shorthand name of pg
 import os  # imports os, a python native libarary which deals with files and paths
-import numpy as np # imports numpy, a python library with math, arrays, and a lot of stuff. For this, mostly arrays
+import numpy as np# imports numpy, a python library with math, arrays, and a lot of stuff. For this, mostly arrays
 
 
 main_dir = os.path.split(os.path.abspath(__file__))[0] # establishes the defualt absolute path to the directory where this is run/located on a computer
@@ -71,7 +70,6 @@ turn_dict = {
 
 dtos = np.array(np.zeros((8,8)))
 dtos.astype(int)
-print(boards)
  
 
 
@@ -554,7 +552,6 @@ def main():
     a loop until the function returns."""
     
     
-    print(pieces)
     # Initialize Everything
     pg.init()
     screen = pg.display.set_mode((600, 600), pg.SCALED)
@@ -647,8 +644,6 @@ def main():
                         pieces[int(ind1)][int(ind2)] = 0
                         pieces[cur_box[0],cur_box[1]].box = int(cur_box[0]),int(cur_box[1])
                         turn = turn_dict[turn]
-                    print(boards)
-                    print(np.where(boards == 150), np.where(boards == 260))
                 # Creating moves
                 elif str(pieces[cur_box[0]][cur_box[1]].name)[1] == '1' or '2': # If is a pawn, make the moves - later will be all pieces
                     #open dots
@@ -657,7 +652,6 @@ def main():
                             pieces[prev_box[0]][prev_box[1]].close_moves() # closes movement
 
                         pieces[cur_box[0]][cur_box[1]].create_moves() # Uses method to make moves
-                    print(boards)
 
                     
             
